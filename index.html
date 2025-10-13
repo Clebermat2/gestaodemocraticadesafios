@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo 2: Dilemas da Gestão Democrática</title>
+    <style>
+        :root {
+            --bg-color: #eef7ff;
+            --text-color: #333;
+            --primary-color: #5a3e8d;
+            --secondary-color: #f0ad4e;
+            --accent-color: #d9534f;
+            --border-color: #ccc;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            font-size: 16px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .high-contrast {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --primary-color: #ffff00;
+            --secondary-color: #ff9900;
+            --accent-color: #ff5555;
+            --border-color: #ffffff;
+            --card-bg: #222222;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--primary-color);
+        }
+
+        .accessibility-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .accessibility-controls button {
+            padding: 10px 15px;
+            font-size: 1em;
+            cursor: pointer;
+            border: 1px solid var(--primary-color);
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 5px;
+        }
+        
+        .accessibility-controls button:hover {
+            opacity: 0.8;
+        }
+        
+        #card-container {
+            perspective: 1000px;
+            height: 400px;
+        }
+        
+        #dilemma-card {
+            width: 100%;
+            height: 100%;
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            padding: 20px;
+            box-sizing: border-box;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        #dilemma-text {
+            font-size: 1.2em;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        @media (min-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .options-grid button {
+            padding: 15px;
+            font-size: 1em;
+            cursor: pointer;
+            border: 1px solid var(--primary-color);
+            background-color: transparent;
+            color: var(--primary-color);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .options-grid button:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        #dilemma-feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            text-align: left;
+        }
+        
+        #next-dilemma {
+            margin-top: 20px;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            cursor: pointer;
+            background-color: var(--secondary-color);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Jogo 2: Dilemas da Gestão Democrática</h1>
+        <div class="accessibility-controls">
+            <button id="increase-font">Aumentar Fonte</button>
+            <button id="decrease-font">Diminuir Fonte</button>
+            <button id="toggle-contrast">Alto Contraste</button>
+        </div>
+
+        <div id="card-container">
+            <div id="dilemma-card">
+                <div>
+                    <p id="dilemma-text"></p>
+                </div>
+                <div class="options-grid" id="dilemma-options"></div>
+            </div>
+        </div>
+
+        <div id="dilemma-feedback"></div>
+        <button id="next-dilemma">Próximo Dilema</button>
+    </div>
+
+    <script>
+        const dilemmas = [
+            {
+                dilemma: "A escola recebeu os recursos do PDDE. Como você, gestor(a), decide onde o dinheiro será aplicado?",
+                options: [
+                    { text: "Decido sozinho(a) para ser mais rápido, pois conheço as necessidades da escola.", isCorrect: false },
+                    { text: "Convoco o Conselho Escolar e a comunidade para uma reunião, apresento os valores e construímos juntos uma lista de prioridades.", isCorrect: true }
+                ],
+                feedback: "A Gestão Democrática se fortalece com a participação coletiva. Decidir em conjunto com a comunidade escolar é o caminho correto para alinhar os gastos às reais necessidades de todos. (Caderno 2, p. 12)"
+            },
+            {
+                dilemma: "Um grupo de estudantes quer usar parte do recurso para criar um espaço de convivência, mas alguns professores acham que o dinheiro deveria ser usado apenas para materiais pedagógicos. O que fazer?",
+                options: [
+                    { text: "Mediar um diálogo entre estudantes e professores, buscando um consenso que contemple parte das duas propostas, se possível, e que esteja alinhado ao PPP.", isCorrect: true },
+                    { text: "Ignorar a proposta dos estudantes, pois os professores têm mais experiência sobre as necessidades da escola.", isCorrect: false }
+                ],
+                feedback: "A mediação de conflitos e o diálogo são pilares da Gestão Democrática. Dar voz aos estudantes e buscar o consenso valoriza a participação de todos os segmentos. (Caderno 2, p. 41)"
+            },
+            {
+                dilemma: "A escola possui estudantes com deficiência visual e precisa adquirir materiais. Qual ação é mais alinhada a uma perspectiva de inclusão e equidade?",
+                options: [
+                    { text: "Comprar materiais didáticos comuns para todas as turmas, pois o princípio da igualdade diz que todos devem receber o mesmo.", isCorrect: false },
+                    { text: "Utilizar os recursos do PDDE para adquirir materiais em Braille, audiolivros e softwares de acessibilidade, atendendo às necessidades específicas desses estudantes.", isCorrect: true }
+                ],
+                feedback: "Equidade é diferente de igualdade. Uma gestão inclusiva busca oferecer recursos específicos para garantir que todos os estudantes tenham as mesmas oportunidades de aprendizagem. (Caderno 2, p. 52)"
+            },
+            {
+                dilemma: "A prestação de contas dos recursos do PDDE foi finalizada. Qual é a próxima etapa, segundo os princípios da transparência?",
+                options: [
+                    { text: "Apresentar a prestação de contas em reunião aberta para toda a comunidade escolar, fixando um resumo em local visível na escola.", isCorrect: true },
+                    { text: "Arquivar os documentos e enviá-los apenas à Secretaria de Educação, pois a comunidade não precisa desses detalhes.", isCorrect: false }
+                ],
+                feedback: "A transparência é fundamental no uso de recursos públicos. Dar publicidade à prestação de contas fortalece o controle social e a confiança da comunidade na gestão escolar. (Caderno 2, p. 35)"
+            }
+        ];
+
+        let currentDilemmaIndex = 0;
+        let fontSize = 16;
+
+        const body = document.body;
+        const dilemmaText = document.getElementById('dilemma-text');
+        const dilemmaOptions = document.getElementById('dilemma-options');
+        const dilemmaFeedback = document.getElementById('dilemma-feedback');
+        const nextDilemmaBtn = document.getElementById('next-dilemma');
+
+        document.getElementById('increase-font').addEventListener('click', () => {
+            fontSize += 2;
+            body.style.fontSize = `${fontSize}px`;
+        });
+
+        document.getElementById('decrease-font').addEventListener('click', () => {
+            fontSize = Math.max(12, fontSize - 2);
+            body.style.fontSize = `${fontSize}px`;
+        });
+
+        document.getElementById('toggle-contrast').addEventListener('click', () => {
+            body.classList.toggle('high-contrast');
+        });
+
+        function loadDilemma(index) {
+            const dilemma = dilemmas[index];
+            dilemmaText.textContent = dilemma.dilemma;
+            dilemmaOptions.innerHTML = '';
+            dilemma.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option.text;
+                button.onclick = () => checkAnswer(option.isCorrect, dilemma.feedback);
+                dilemmaOptions.appendChild(button);
+            });
+            dilemmaFeedback.style.display = 'none';
+            nextDilemmaBtn.style.display = 'none';
+        }
+
+        function checkAnswer(isCorrect, feedbackText) {
+            Array.from(dilemmaOptions.children).forEach(button => button.disabled = true);
+            
+            dilemmaFeedback.textContent = feedbackText;
+            if (isCorrect) {
+                dilemmaFeedback.style.backgroundColor = '#d4edda';
+                dilemmaFeedback.style.color = '#155724';
+                dilemmaFeedback.style.borderColor = '#c3e6cb';
+            } else {
+                dilemmaFeedback.style.backgroundColor = '#f8d7da';
+                dilemmaFeedback.style.color = '#721c24';
+                dilemmaFeedback.style.borderColor = '#f5c6cb';
+            }
+            dilemmaFeedback.style.display = 'block';
+            nextDilemmaBtn.style.display = 'inline-block';
+        }
+
+        nextDilemmaBtn.addEventListener('click', () => {
+            currentDilemmaIndex++;
+            if (currentDilemmaIndex >= dilemmas.length) {
+                dilemmaText.textContent = "Parabéns! Você enfrentou todos os dilemas e demonstrou conhecer os caminhos de uma verdadeira Gestão Democrática!";
+                dilemmaOptions.innerHTML = '';
+                dilemmaFeedback.style.display = 'none';
+                nextDilemmaBtn.style.display = 'none';
+            } else {
+                loadDilemma(currentDilemmaIndex);
+            }
+        });
+
+        loadDilemma(currentDilemmaIndex);
+    </script>
+
+</body>
+</html>
