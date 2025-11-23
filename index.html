@@ -6,14 +6,19 @@
     <title>Jogo 2: Dilemas da Gestão Democrática</title>
     <style>
         :root {
-            --bg-color: #eef7ff;
+            /* Cores solicitadas */
+            --bg-color: #EFF7FE;        /* 4. Cor de fundo da página */
+            --card-bg: #F0F8FF;         /* 5. Cor de fundo das perguntas */
+            --primary-color: #007BFF;   /* 1. e 2. Cor dos botões e Título */
+            --hover-color: #28A745;     /* 3. Cor do efeito hover */
+            
+            /* Cores de Feedback (Mantidas do padrão anterior) */
+            --accent-color: #28a745;    /* Verde para acerto */
+            --error-color: #dc3545;     /* Vermelho para erro */
+            
+            /* Outras variáveis */
             --text-color: #333;
-            --primary-color: #5a3e8d; /* Roxo original do Jogo 2 */
-            --secondary-color: #f0ad4e;
-            --accent-color: #28a745; /* Verde (Padronizado Jogo 1) */
-            --error-color: #dc3545; /* Vermelho (Padronizado Jogo 1) */
             --border-color: #ccc;
-            --card-bg: #ffffff;
         }
 
         body {
@@ -30,11 +35,11 @@
             --bg-color: #000000;
             --text-color: #ffffff;
             --primary-color: #ffff00;
-            --secondary-color: #ff9900;
+            --card-bg: #222222;
+            --hover-color: #00ff00;
             --accent-color: #00ff00;
             --error-color: #ff0000;
             --border-color: #ffffff;
-            --card-bg: #222222;
         }
 
         .container {
@@ -44,7 +49,7 @@
         }
 
         h1 {
-            color: var(--primary-color);
+            color: var(--primary-color); /* 2. Cor do título */
         }
 
         .accessibility-controls {
@@ -60,9 +65,10 @@
             font-size: 1em;
             cursor: pointer;
             border: 1px solid var(--primary-color);
-            background-color: var(--primary-color);
+            background-color: var(--primary-color); /* 1. Cor de fundo dos botões */
             color: white;
             border-radius: 5px;
+            transition: opacity 0.3s;
         }
         
         .accessibility-controls button:hover {
@@ -71,8 +77,6 @@
         
         #card-container {
             perspective: 1000px;
-            /* Altura removida para se ajustar ao conteúdo dinamicamente, 
-               mas mantendo min-height para estabilidade */
             min-height: 400px; 
             margin-bottom: 20px;
         }
@@ -80,12 +84,12 @@
         #dilemma-card {
             width: 100%;
             height: 100%;
-            background-color: var(--card-bg);
+            background-color: var(--card-bg); /* 5. Cor de fundo das perguntas */
             border: 2px solid var(--border-color);
             border-radius: 15px;
             padding: 20px;
             box-sizing: border-box;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -93,7 +97,7 @@
         
         #dilemma-text {
             font-size: 1.2em;
-            color: var(--primary-color); /* Ajustado para primária para contraste neutro inicial */
+            color: var(--primary-color);
             font-weight: bold;
             margin-bottom: 20px;
         }
@@ -115,24 +119,36 @@
             font-size: 1em;
             cursor: pointer;
             border: 1px solid var(--primary-color);
-            background-color: transparent;
+            background-color: white;
             color: var(--text-color);
             border-radius: 8px;
             transition: all 0.3s;
-            height: 100%; /* Para alinhar alturas */
+            height: 100%;
         }
         
+        /* 3. Cor do efeito hover ao passar o mouse */
         .options-grid button:hover {
-            background-color: var(--primary-color);
+            background-color: var(--hover-color); 
+            border-color: var(--hover-color);
             color: white;
         }
+        
+        /* Estado desabilitado (após clicar) para não mudar de cor no hover */
+        .options-grid button:disabled:hover {
+            background-color: white;
+            color: var(--text-color);
+            border-color: var(--primary-color);
+            cursor: default;
+        }
+        
+        /* Classes específicas para quando a resposta é revelada (JS aplica inline, mas CSS garante prioridade) */
         
         #dilemma-feedback {
             margin-top: 20px;
             padding: 15px;
             border-radius: 8px;
             display: none;
-            text-align: center; /* Centralizado como no Jogo 1 */
+            text-align: center;
         }
         
         #next-dilemma {
@@ -140,18 +156,21 @@
             padding: 12px 30px;
             font-size: 1.1em;
             cursor: pointer;
-            background-color: var(--secondary-color);
+            background-color: var(--primary-color); /* 1. Cor de fundo dos botões */
             color: #fff;
             border: none;
             border-radius: 5px;
             display: none;
         }
+        
+        #next-dilemma:hover {
+            opacity: 0.9;
+        }
 
-        /* Estilos do Placar Final (Idêntico ao Jogo 1) */
         .score-box {
             margin-top: 20px;
             padding: 15px;
-            background-color: var(--card-bg);
+            background-color: #ffffff;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             display: inline-block;
@@ -224,7 +243,7 @@
         let scoreWrong = 0;
 
         const body = document.body;
-        const dilemmaCard = document.getElementById('dilemma-card'); // Elemento pai
+        const dilemmaCard = document.getElementById('dilemma-card');
         const dilemmaText = document.getElementById('dilemma-text');
         const dilemmaOptions = document.getElementById('dilemma-options');
         const dilemmaFeedback = document.getElementById('dilemma-feedback');
@@ -249,16 +268,14 @@
             dilemmaText.textContent = dilemma.dilemma;
             dilemmaOptions.innerHTML = '';
             
-            // Reseta visualização
             dilemmaFeedback.style.display = 'none';
             dilemmaFeedback.textContent = '';
             nextDilemmaBtn.style.display = 'none';
-            dilemmaOptions.style.display = 'grid'; // Garante que opções apareçam
+            dilemmaOptions.style.display = 'grid'; 
 
             dilemma.options.forEach((option, idx) => {
                 const button = document.createElement('button');
                 button.textContent = option.text;
-                // Passamos o índice do botão clicado para a função
                 button.onclick = () => checkAnswer(idx, option.isCorrect, dilemma.feedback);
                 dilemmaOptions.appendChild(button);
             });
@@ -268,28 +285,30 @@
             const buttons = Array.from(dilemmaOptions.children);
             
             // Desabilita botões
-            buttons.forEach(button => button.disabled = true);
+            buttons.forEach(button => {
+                button.disabled = true;
+                // Remove o efeito de hover via style inline para garantir que não fique verde se não foi o clicado
+                button.style.pointerEvents = 'none'; 
+            });
             
             if (isCorrect) {
-                // Lógica de Acerto
+                // Acerto
                 scoreCorrect++;
                 
                 dilemmaFeedback.style.color = 'var(--accent-color)';
                 dilemmaFeedback.innerHTML = `<span style="font-size:1.2em">✔️ <strong>Sua Resposta está Correta</strong></span><br><br>${feedbackText}`;
                 
-                // Botão verde
                 buttons[selectedIndex].style.backgroundColor = 'var(--accent-color)';
                 buttons[selectedIndex].style.color = 'white';
                 buttons[selectedIndex].style.borderColor = 'var(--accent-color)';
 
             } else {
-                // Lógica de Erro
+                // Erro
                 scoreWrong++;
                 
                 dilemmaFeedback.style.color = 'var(--error-color)';
                 dilemmaFeedback.innerHTML = `<span style="font-size:1.2em">❌ <strong>Sua Resposta está Errada</strong></span><br><br>${feedbackText}`;
                 
-                // Botão vermelho
                 buttons[selectedIndex].style.backgroundColor = 'var(--error-color)';
                 buttons[selectedIndex].style.color = 'white';
                 buttons[selectedIndex].style.borderColor = 'var(--error-color)';
@@ -309,13 +328,11 @@
         });
 
         function showGameOver() {
-            // Esconde elementos do jogo
             dilemmaText.style.display = 'none';
             dilemmaOptions.style.display = 'none';
             dilemmaFeedback.style.display = 'none';
             nextDilemmaBtn.style.display = 'none';
 
-            // Usa o próprio card para mostrar o resultado
             const resultDiv = document.createElement('div');
             resultDiv.innerHTML = `
                 <h2 style="color: var(--primary-color);">Fim de Jogo!</h2>
@@ -325,7 +342,7 @@
                     <p style="color: var(--error-color); font-size: 1.2em;"><strong>Questões Incorretas: ${scoreWrong}</strong></p>
                 </div>
                 <br><br>
-                <button onclick="location.reload()" style="padding:12px 24px; background-color: var(--secondary-color); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">Jogar Novamente</button>
+                <button onclick="location.reload()" style="padding:12px 24px; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">Jogar Novamente</button>
             `;
             
             dilemmaCard.appendChild(resultDiv);
