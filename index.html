@@ -10,10 +10,10 @@
             --bg-color: #EFF7FE;        /* 4. Cor de fundo da página */
             --card-bg: #F0F8FF;         /* 5. Cor de fundo das perguntas */
             --primary-color: #007BFF;   /* 1. e 2. Cor dos botões e Título */
-            --hover-color: #007BFF;     /* 3. Cor do efeito hover */
+            --hover-color: #0056b3;     /* 3. Ajustado para um azul levemente mais escuro no hover */
             
-            /* Cores de Feedback (Mantidas do padrão anterior) */
-            --accent-color: #007BFF;    /* Verde para acerto */
+            /* Cores de Feedback (AJUSTADO PARA VERDE) */
+            --accent-color: #28a745;    /* Verde para acerto */
             --error-color: #dc3545;     /* Vermelho para erro */
             
             /* Outras variáveis */
@@ -31,20 +31,18 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
-.high-contrast {
+        .high-contrast {
             --bg-color: #000000;
             --text-color: #ffffff;
             
-            /* AQUI: Mudei de Amarelo (#ffff00) para o Azul (#007BFF) */
             --primary-color: #007BFF; 
             
             --secondary-color: #ff9900;
-            --accent-color: #00ff00;
+            --accent-color: #00ff00;    /* Verde brilhante para contraste */
             --error-color: #ff0000;
             --border-color: #ffffff;
-            --card-bg: #831d1c;
+            --card-bg: #222222;         /* Ajustado para cinza escuro para melhor leitura */
             
-            /* Ajuste da cor de hover para um azul mais claro no alto contraste */
             --hover-color: #3399ff; 
         }
 
@@ -55,7 +53,7 @@
         }
 
         h1 {
-            color: var(--primary-color); /* 2. Cor do título */
+            color: var(--primary-color);
         }
 
         .accessibility-controls {
@@ -71,7 +69,7 @@
             font-size: 1em;
             cursor: pointer;
             border: 1px solid var(--primary-color);
-            background-color: var(--primary-color); /* 1. Cor de fundo dos botões */
+            background-color: var(--primary-color);
             color: white;
             border-radius: 5px;
             transition: opacity 0.3s;
@@ -90,7 +88,7 @@
         #dilemma-card {
             width: 100%;
             height: 100%;
-            background-color: var(--card-bg); /* 5. Cor de fundo das perguntas */
+            background-color: var(--card-bg);
             border: 2px solid var(--border-color);
             border-radius: 15px;
             padding: 20px;
@@ -132,22 +130,18 @@
             height: 100%;
         }
         
-        /* 3. Cor do efeito hover ao passar o mouse */
         .options-grid button:hover {
             background-color: var(--hover-color); 
             border-color: var(--hover-color);
             color: white;
         }
         
-        /* Estado desabilitado (após clicar) para não mudar de cor no hover */
         .options-grid button:disabled:hover {
             background-color: white;
             color: var(--text-color);
             border-color: var(--primary-color);
             cursor: default;
         }
-        
-        /* Classes específicas para quando a resposta é revelada (JS aplica inline, mas CSS garante prioridade) */
         
         #dilemma-feedback {
             margin-top: 20px;
@@ -162,7 +156,7 @@
             padding: 12px 30px;
             font-size: 1.1em;
             cursor: pointer;
-            background-color: var(--primary-color); /* 1. Cor de fundo dos botões */
+            background-color: var(--primary-color);
             color: #fff;
             border: none;
             border-radius: 5px;
@@ -181,22 +175,25 @@
             border-radius: 8px;
             display: inline-block;
         }
-/* Coonfigurações para o modo contraste*/
-    .high-contrast .options-grid button {
-    background-color: #000000; /* Muda o fundo de branco para Preto (ou a cor que desejar) */
-    color: #ffffff;            /* Garante que o texto fique branco */
-    border-color: var(--primary-color); /* Garante que a borda fique visível */
-}  
-    .high-contrast #dilemma-feedback, 
-.high-contrast #dilemma-feedback span {
-    color: #ffffff !important;       /* Força a cor do texto para branco */
-    border-color: #ffffff !important; /* Força a borda (se houver) para branco */
-}.high-contrast #dilemma-text {
-    color: #ffffff; /* Define a cor do texto da pergunta como Branco */
-}
-.high-contrast #dilemma-text {
-    color: #ffffff; /* Define a cor do texto da pergunta como Branco */
-}
+
+        /* Configurações para o modo contraste */
+        .high-contrast .options-grid button {
+            background-color: #000000;
+            color: #ffffff;           
+            border-color: var(--primary-color);
+        }  
+        .high-contrast #dilemma-feedback, 
+        .high-contrast #dilemma-feedback span {
+            color: #ffffff !important;       
+            border-color: #ffffff !important;
+        }
+        .high-contrast #dilemma-text {
+            color: #ffffff;
+        }
+        .high-contrast .score-box {
+            background-color: #000000;
+            color: #ffffff;
+        }
     </style>
 </head>
 <body>
@@ -298,18 +295,24 @@
             dilemma.options.forEach((option, idx) => {
                 const button = document.createElement('button');
                 button.textContent = option.text;
-                button.onclick = () => checkAnswer(idx, option.isCorrect, dilemma.feedback);
+                // Passando o idx e a lista completa para saber qual é a correta
+                button.onclick = () => checkAnswer(idx, option.isCorrect, dilemma.feedback, dilemma.options);
                 dilemmaOptions.appendChild(button);
             });
         }
 
-        function checkAnswer(selectedIndex, isCorrect, feedbackText) {
+        function checkAnswer(selectedIndex, isCorrect, feedbackText, currentOptions) {
             const buttons = Array.from(dilemmaOptions.children);
             
+            // Encontra o índice da resposta correta
+            let correctIndex = -1;
+            currentOptions.forEach((opt, index) => {
+                if(opt.isCorrect) correctIndex = index;
+            });
+
             // Desabilita botões
             buttons.forEach(button => {
                 button.disabled = true;
-                // Remove o efeito de hover via style inline para garantir que não fique verde se não foi o clicado
                 button.style.pointerEvents = 'none'; 
             });
             
@@ -331,9 +334,17 @@
                 dilemmaFeedback.style.color = 'var(--error-color)';
                 dilemmaFeedback.innerHTML = `<span style="font-size:1.2em">❌ <strong>Sua Resposta está Errada</strong></span><br><br>${feedbackText}`;
                 
+                // Pinta o botão errado de vermelho
                 buttons[selectedIndex].style.backgroundColor = 'var(--error-color)';
                 buttons[selectedIndex].style.color = 'white';
                 buttons[selectedIndex].style.borderColor = 'var(--error-color)';
+                
+                // Pinta o botão CORRETO de verde (para o usuário aprender)
+                if (correctIndex !== -1) {
+                    buttons[correctIndex].style.backgroundColor = 'var(--accent-color)';
+                    buttons[correctIndex].style.color = 'white';
+                    buttons[correctIndex].style.borderColor = 'var(--accent-color)';
+                }
             }
             
             dilemmaFeedback.style.display = 'block';
